@@ -1,0 +1,30 @@
+{
+  "$schema": "../../config.schema.json",
+  "chain": "ethereum",
+  "name": "lzomnichain-zkbridge",
+  "initialAddresses": ["0x394ee343625B83B5778d6F42d35142bdf26dBAcD"],
+  "names": {
+    "0x394ee343625B83B5778d6F42d35142bdf26dBAcD": "Polyhedra zkLightClient"
+  },
+  "overrides": {
+    "Polyhedra zkLightClient": {
+      "fields": {
+        "blockUpdaters": {
+          "type": "stateFromEvent",
+          "event": "ModBlockUpdater",
+          "returnParams": ["sourceChainId", "newBlockUpdater"],
+          "groupBy": "sourceChainId",
+          "onlyValue": true
+        },
+        // To be clear, we should have state from two events here
+        "supportedDstChain": {
+          "type": "arrayFromTwoEvents",
+          "addEvent": "EnableSupportedDstChain",
+          "addKey": "dstChainId",
+          "removeEvent": "DisableSupportedDstChain",
+          "removeKey": "dstChainId"
+        }
+      }
+    }
+  }
+}
