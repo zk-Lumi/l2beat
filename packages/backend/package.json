@@ -8,6 +8,7 @@
     "build": "tsc -p tsconfig.build.json",
     "build:dependencies": "cd ../.. && yarn build:dependencies",
     "clean": "rm -rf build",
+    "decode": "ts-node-dev --respawn --transpile-only src/decode/index.ts",
     "discover": "./scripts/discoverAndAddHistory.sh",
     "discover:raw": "discovery discover",
     "discover:dev": "cd ../discovery && yarn build && cd - && yarn discover --dev",
