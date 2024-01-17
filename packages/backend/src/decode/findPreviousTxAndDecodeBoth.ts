@@ -5,7 +5,6 @@ import { analyzeTransaction } from './analyze'
 import { BasicInfo, decodeBasicInfo } from './decode'
 import { decodeBytes } from './decodeBytes'
 import { FinalityRepository } from './FinalityRepository'
-import { FourBytesApi } from './FourBytesApi'
 
 export async function findPreviousTxAndDecodeBoth(
   provider: providers.Provider,
@@ -13,10 +12,15 @@ export async function findPreviousTxAndDecodeBoth(
   projectId: string,
   targetTimestamp: string,
   firstTxBasicInfo: BasicInfo,
-  fourBytesApi: FourBytesApi,
   lastTxTimestamp: number,
   currentTxCount: number,
-): Promise<'SKIP' | undefined> {
+): Promise<
+  | 'SKIP'
+  | {
+      minimumFinalityDelay: number
+      maximumFinalityDelay: number
+    }
+> {
   const previous_tx_hash = await finalityRepository.findByProjectIdAndTimestamp(
     ProjectId(projectId),
     new UnixTime(Number(targetTimestamp)),
@@ -33,7 +37,7 @@ export async function findPreviousTxAndDecodeBoth(
       previousTxResult.bytes,
       firstTxBasicInfo.bytes,
     ])
-    await decodeBytes(combinedBytes, lastTxTimestamp, fourBytesApi)
+    return decodeBytes(combinedBytes, lastTxTimestamp)
   } else {
     return 'SKIP'
   }
