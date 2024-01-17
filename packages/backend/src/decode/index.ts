@@ -62,7 +62,7 @@ async function getTx() {
   const fourBytesApi = new FourBytesApi()
 
   let run = true
-  let tx = 1
+  let tx = 0
 
   while (run) {
     const tx_hash = await finalityRepository.findByProjectIdAndTimestamp(
@@ -89,6 +89,7 @@ async function getTx() {
       )
       if (res === 'SKIP') {
         tx++
+        console.log('Skipping tx')
       } else {
         run = false
       }
@@ -106,6 +107,7 @@ async function getTx() {
       )
       if (res === 'SKIP') {
         tx++
+        console.log('Skipping tx')
       } else {
         run = false
       }
@@ -119,7 +121,7 @@ async function getTx() {
 
 getTx()
   .then(() => {
-    process.exit(1)
+    process.exit(0)
   })
   .catch((e) => {
     console.error(e)
