@@ -10,7 +10,6 @@ import { decodeBytes } from './decodeBytes'
 import { FinalityRepository } from './FinalityRepository'
 import { findNextTxAndDecodeBoth } from './findNextTxAndDecodeBoth'
 import { findPreviousTxAndDecodeBoth } from './findPreviousTxAndDecodeBoth'
-import { FourBytesApi } from './FourBytesApi'
 
 const config = getConfig()
 const loggerOptions = { ...config.logger }
