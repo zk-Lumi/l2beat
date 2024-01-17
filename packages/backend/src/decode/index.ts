@@ -10,6 +10,7 @@ import { decodeBytes } from './decodeBytes'
 import { FinalityRepository } from './FinalityRepository'
 import { findNextTxAndDecodeBoth } from './findNextTxAndDecodeBoth'
 import { findPreviousTxAndDecodeBoth } from './findPreviousTxAndDecodeBoth'
+import { FourBytesApi } from './FourBytesApi'
 
 const config = getConfig()
 const loggerOptions = { ...config.logger }
@@ -59,61 +60,58 @@ async function getTx() {
   const rpcUrl = `https://eth-mainnet.alchemyapi.io/v2/${alchemyKey}`
   const provider = new ethers.providers.JsonRpcProvider(rpcUrl)
 
-  for (let i = 0; i < 30 * 24; i++) {
-    let run = true
-    let tx = 0
-    const testTimestamp = UnixTime.now().toStartOf('hour').add(-i, 'hours')
+  let run = true
+  let tx = 0
 
-    while (run) {
-      const tx_hash = await finalityRepository.findByProjectIdAndTimestamp(
-        ProjectId(projectId),
-        new UnixTime(Number(testTimestamp.toString())),
+  while (run) {
+    const tx_hash = await finalityRepository.findByProjectIdAndTimestamp(
+      ProjectId(projectId),
+      new UnixTime(Number(targetTimestamp)),
+      tx,
+    )
+    console.log(tx_hash)
+
+    const { data, timestamp } = await analyzeTransaction(provider, tx_hash)
+
+    const result = decodeBasicInfo(projectId, data)
+    console.log(result.type)
+    // if there is no second frame, check the next tx
+    if (result.type === 'NO_END_FRAME') {
+      const res = await findNextTxAndDecodeBoth(
+        provider,
+        finalityRepository,
+        projectId,
+        targetTimestamp,
+        result,
         tx,
       )
-      console.log(tx_hash)
-
-      const { data, timestamp } = await analyzeTransaction(provider, tx_hash)
-
-      const result = decodeBasicInfo(projectId, data)
-      console.log(result.type)
-      // if there is no second frame, check the next tx
-      if (result.type === 'NO_END_FRAME') {
-        const res = await findNextTxAndDecodeBoth(
-          provider,
-          finalityRepository,
-          projectId,
-          targetTimestamp,
-          result,
-          tx,
-        )
-        if (res === 'SKIP') {
-          tx++
-          console.log('Skipping tx')
-        } else {
-          run = false
-        }
-        // if there is no first frame, check the previous tx
-      } else if (result.type === 'NO_FIRST_FRAME') {
-        const res = await findPreviousTxAndDecodeBoth(
-          provider,
-          finalityRepository,
-          projectId,
-          targetTimestamp,
-          result,
-          timestamp,
-          tx,
-        )
-        if (res === 'SKIP') {
-          tx++
-          console.log('Skipping tx')
-        } else {
-          run = false
-        }
-        // if there is only one frame, decode it
+      if (res === 'SKIP') {
+        tx++
+        console.log('Skipping tx')
       } else {
-        const res = decodeBytes(result.bytes, timestamp)
         run = false
       }
+      // if there is no first frame, check the previous tx
+    } else if (result.type === 'NO_FIRST_FRAME') {
+      const res = await findPreviousTxAndDecodeBoth(
+        provider,
+        finalityRepository,
+        projectId,
+        targetTimestamp,
+        result,
+        timestamp,
+        tx,
+      )
+      if (res === 'SKIP') {
+        tx++
+        console.log('Skipping tx')
+      } else {
+        run = false
+      }
+      // if there is only one frame, decode it
+    } else {
+      const res = decodeBytes(result.bytes, timestamp)
+      run = false
     }
   }
 }
