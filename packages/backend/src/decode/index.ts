@@ -5,8 +5,11 @@ import { ethers } from 'ethers'
 import { getConfig } from '../config'
 import { Database } from '../peripherals/database/shared/Database'
 import { analyzeTransaction } from './analyze'
-import { decodeOpStackSequencerBatch } from './decode'
+import { decodeBasicInfo } from './decode'
+import { decodeBytes } from './decodeBytes'
 import { FinalityRepository } from './FinalityRepository'
+import { findNextTxAndDecodeBoth } from './findNextTxAndDecodeBoth'
+import { findPreviousTxAndDecodeBoth } from './findPreviousTxAndDecodeBoth'
 import { FourBytesApi } from './FourBytesApi'
 
 const config = getConfig()
@@ -25,16 +28,16 @@ const database = new Database(config.database.connection, config.name, logger, {
 const finalityRepository = new FinalityRepository(database, logger)
 
 function getArgs() {
-  if (process.argv.length !== 4) {
+  if (process.argv.length !== 3 && process.argv.length !== 4) {
     printHelpAndExit()
   }
   const projectId = process.argv[2]
-  const targetTimestamp = process.argv[3]
+  const targetTimestamp = process.argv[3] || UnixTime.now().toString()
   return { projectId, targetTimestamp }
 }
 
 function printHelpAndExit(): never {
-  console.log('USAGE: yarn decode [project_id] [timestamp]')
+  console.log('USAGE: yarn decode [project_id] [timestamp(optional)]')
   process.exit(1)
 }
 
@@ -52,19 +55,66 @@ async function getTx() {
   ) {
     database.enableQueryLogging()
   }
-  const tx_hash = await finalityRepository.findByProjectIdAndTimestamp(
-    ProjectId(projectId),
-    new UnixTime(Number(targetTimestamp)),
-    1,
-  )
-  console.log(tx_hash)
+
   const alchemyKey = getEnv().string('FINALITY_ALCHEMY_KEY')
   const rpcUrl = `https://eth-mainnet.alchemyapi.io/v2/${alchemyKey}`
   const provider = new ethers.providers.JsonRpcProvider(rpcUrl)
-  const { data, timestamp } = await analyzeTransaction(provider, tx_hash)
-
   const fourBytesApi = new FourBytesApi()
-  await decodeOpStackSequencerBatch(projectId, data, timestamp, fourBytesApi)
+
+  let run = true
+  let tx = 1
+
+  while (run) {
+    const tx_hash = await finalityRepository.findByProjectIdAndTimestamp(
+      ProjectId(projectId),
+      new UnixTime(Number(targetTimestamp)),
+      tx,
+    )
+    console.log(tx_hash)
+
+    const { data, timestamp } = await analyzeTransaction(provider, tx_hash)
+
+    const result = decodeBasicInfo(projectId, data)
+    console.log(result.type)
+    // if there is no second frame, check the next tx
+    if (result.type === 'NO_END_FRAME') {
+      const res = await findNextTxAndDecodeBoth(
+        provider,
+        finalityRepository,
+        projectId,
+        targetTimestamp,
+        result,
+        fourBytesApi,
+        tx,
+      )
+      if (res === 'SKIP') {
+        tx++
+      } else {
+        run = false
+      }
+      // if there is no first frame, check the previous tx
+    } else if (result.type === 'NO_FIRST_FRAME') {
+      const res = await findPreviousTxAndDecodeBoth(
+        provider,
+        finalityRepository,
+        projectId,
+        targetTimestamp,
+        result,
+        fourBytesApi,
+        timestamp,
+        tx,
+      )
+      if (res === 'SKIP') {
+        tx++
+      } else {
+        run = false
+      }
+      // if there is only one frame, decode it
+    } else {
+      await decodeBytes(result.bytes, timestamp, fourBytesApi)
+      run = false
+    }
+  }
 }
 
 getTx()

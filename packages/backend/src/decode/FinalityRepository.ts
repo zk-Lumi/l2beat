@@ -26,8 +26,9 @@ export class FinalityRepository extends BaseRepository {
       .andWhere('c.type', 'DA')
       .andWhere('l.timestamp', '<=', date.toDate())
       .orderBy('l.timestamp', 'desc')
+      .distinct('l.tx_hash')
       .limit(1)
-      .offset(place - 1)
+      .offset(place)
 
     return (rows[0] as { tx_hash: string }).tx_hash
   }

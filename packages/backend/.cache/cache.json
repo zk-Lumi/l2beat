@@ -43,5 +43,9 @@
   "0x72764dee": null,
   "0x03728f60": null,
   "0x7821e2db": null,
-  "0xc2288147": "bridge(address,uint256,address,uint256,(address,address,uint256,uint256,bytes),(address,address,uint256,uint256,bytes))"
+  "0xc2288147": "bridge(address,uint256,address,uint256,(address,address,uint256,uint256,bytes),(address,address,uint256,uint256,bytes))",
+  "0xd6c19d4b": null,
+  "0x8a8ef0b3": null,
+  "0xfa98a33f": null,
+  "0x1d86d44b": "sealBatch(address,(uint256,address,bytes)[])"
 }
