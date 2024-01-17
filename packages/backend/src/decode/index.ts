@@ -60,13 +60,13 @@ async function getTx() {
   const provider = new ethers.providers.JsonRpcProvider(rpcUrl)
 
   let run = true
-  let tx = 0
+  let txCount = 0
 
   while (run) {
     const tx_hash = await finalityRepository.findByProjectIdAndTimestamp(
       ProjectId(projectId),
       new UnixTime(Number(targetTimestamp)),
-      tx,
+      txCount,
     )
     console.log(tx_hash)
 
@@ -82,10 +82,10 @@ async function getTx() {
         projectId,
         targetTimestamp,
         result,
-        tx,
+        txCount,
       )
       if (res === 'SKIP') {
-        tx++
+        txCount++
         console.log('Skipping tx')
       } else {
         run = false
@@ -99,10 +99,10 @@ async function getTx() {
         targetTimestamp,
         result,
         timestamp,
-        tx,
+        txCount,
       )
       if (res === 'SKIP') {
-        tx++
+        txCount++
         console.log('Skipping tx')
       } else {
         run = false
