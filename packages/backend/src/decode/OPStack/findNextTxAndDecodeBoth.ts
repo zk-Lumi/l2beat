@@ -1,13 +1,12 @@
 import { ProjectId, UnixTime } from '@l2beat/shared-pure'
-import { providers } from 'ethers'
 
-import { analyzeTransaction } from './analyze'
-import { BasicInfo, decodeBasicInfo } from './decode'
+import { analyzeTransaction } from '../analyze'
+import { FinalityRepository } from '../FinalityRepository'
+import { BasicInfo, decodeBasicInfo } from './decodeBasicInfo'
 import { decodeBytes } from './decodeBytes'
-import { FinalityRepository } from './FinalityRepository'
 
 export async function findNextTxAndDecodeBoth(
-  provider: providers.Provider,
+  alchemyKey: string,
   finalityRepository: FinalityRepository,
   projectId: string,
   targetTimestamp: string,
@@ -26,7 +25,7 @@ export async function findNextTxAndDecodeBoth(
     currentTxCount - 1,
   )
   console.log('next_tx_hash', next_tx_hash)
-  const { data, timestamp } = await analyzeTransaction(provider, next_tx_hash)
+  const { data, timestamp } = await analyzeTransaction(alchemyKey, next_tx_hash)
   const nextTxResult = decodeBasicInfo(projectId, data)
   // if the next tx has the same channelId and has a type of NO_FIRST_FRAME, decode both txs together
   if (

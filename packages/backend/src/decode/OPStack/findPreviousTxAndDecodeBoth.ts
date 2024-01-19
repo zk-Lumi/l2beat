@@ -1,13 +1,12 @@
 import { ProjectId, UnixTime } from '@l2beat/shared-pure'
-import { providers } from 'ethers'
 
-import { analyzeTransaction } from './analyze'
-import { BasicInfo, decodeBasicInfo } from './decode'
+import { analyzeTransaction } from '../analyze'
+import { FinalityRepository } from '../FinalityRepository'
+import { BasicInfo, decodeBasicInfo } from './decodeBasicInfo'
 import { decodeBytes } from './decodeBytes'
-import { FinalityRepository } from './FinalityRepository'
 
 export async function findPreviousTxAndDecodeBoth(
-  provider: providers.Provider,
+  alchemyKey: string,
   finalityRepository: FinalityRepository,
   projectId: string,
   targetTimestamp: string,
@@ -26,7 +25,7 @@ export async function findPreviousTxAndDecodeBoth(
     new UnixTime(Number(targetTimestamp)),
     currentTxCount + 1,
   )
-  const { data } = await analyzeTransaction(provider, previous_tx_hash)
+  const { data } = await analyzeTransaction(alchemyKey, previous_tx_hash)
   const previousTxResult = decodeBasicInfo(projectId, data)
   // if the previous tx has the same channelId and has a type of NO_END_FRAME, decode both txs together
   if (

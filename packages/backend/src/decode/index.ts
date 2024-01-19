@@ -1,15 +1,11 @@
 import { getEnv, Logger } from '@l2beat/backend-tools'
-import { ProjectId, UnixTime } from '@l2beat/shared-pure'
-import { ethers } from 'ethers'
+import { UnixTime } from '@l2beat/shared-pure'
 
 import { getConfig } from '../config'
 import { Database } from '../peripherals/database/shared/Database'
-import { analyzeTransaction } from './analyze'
-import { decodeBasicInfo } from './decode'
-import { decodeBytes } from './decodeBytes'
+import { decodeArbitrum } from './arbitrum/decodeArbitrum'
 import { FinalityRepository } from './FinalityRepository'
-import { findNextTxAndDecodeBoth } from './findNextTxAndDecodeBoth'
-import { findPreviousTxAndDecodeBoth } from './findPreviousTxAndDecodeBoth'
+import { decodeOPStack } from './OPStack/decodeOPStack'
 
 const config = getConfig()
 const loggerOptions = { ...config.logger }
@@ -56,62 +52,24 @@ async function getTx() {
   }
 
   const alchemyKey = getEnv().string('FINALITY_ALCHEMY_KEY')
-  const rpcUrl = `https://eth-mainnet.alchemyapi.io/v2/${alchemyKey}`
-  const provider = new ethers.providers.JsonRpcProvider(rpcUrl)
 
-  let run = true
-  let txCount = 0
-
-  while (run) {
-    const tx_hash = await finalityRepository.findByProjectIdAndTimestamp(
-      ProjectId(projectId),
-      new UnixTime(Number(targetTimestamp)),
-      txCount,
-    )
-    console.log(tx_hash)
-
-    const { data, timestamp } = await analyzeTransaction(provider, tx_hash)
-
-    const result = decodeBasicInfo(projectId, data)
-    console.log(result.type)
-    // if there is no second frame, check the next tx
-    if (result.type === 'NO_END_FRAME') {
-      const res = await findNextTxAndDecodeBoth(
-        provider,
+  switch (projectId) {
+    case 'aevo':
+    case 'optimism':
+    case 'base':
+    case 'lyra':
+    case 'publicgoodsnetwork':
+    case 'zora':
+      await decodeOPStack(
         finalityRepository,
+        alchemyKey,
         projectId,
         targetTimestamp,
-        result,
-        txCount,
       )
-      if (res === 'SKIP') {
-        txCount++
-        console.log('Skipping tx')
-      } else {
-        run = false
-      }
-      // if there is no first frame, check the previous tx
-    } else if (result.type === 'NO_FIRST_FRAME') {
-      const res = await findPreviousTxAndDecodeBoth(
-        provider,
-        finalityRepository,
-        projectId,
-        targetTimestamp,
-        result,
-        timestamp,
-        txCount,
-      )
-      if (res === 'SKIP') {
-        txCount++
-        console.log('Skipping tx')
-      } else {
-        run = false
-      }
-      // if there is only one frame, decode it
-    } else {
-      const res = decodeBytes(result.bytes, timestamp)
-      run = false
-    }
+      break
+    case 'arbitrum':
+      await decodeArbitrum(finalityRepository, alchemyKey, targetTimestamp)
+      break
   }
 }
 

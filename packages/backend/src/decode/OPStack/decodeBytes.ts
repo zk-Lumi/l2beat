@@ -5,7 +5,7 @@
 import { ethers } from 'ethers'
 import zlib from 'zlib'
 
-import { add0x } from './utils'
+import { add0x } from '../utils/add0x'
 
 export function decodeBytes(bytes: Buffer, submissionTimestamp: number) {
   const inflated = zlib.inflateSync(bytes)
