@@ -28,10 +28,13 @@ export async function decodeArbitrum(
   const newMessageCount = +decodedInput[5] + 22207817
 
   const rpcUrl = `https://arb-mainnet.alchemyapi.io/v2/${alchemyKey}`
-  const arbiturmProvider = new ethers.providers.JsonRpcProvider(rpcUrl)
+  const arbitrumProvider = new ethers.providers.JsonRpcProvider(rpcUrl)
 
-  const prevBlock = await arbiturmProvider.getBlock(prevMessageCount)
-  const newBlock = await arbiturmProvider.getBlock(newMessageCount)
+  const [prevBlock, newBlock] = await Promise.all([
+    arbitrumProvider.getBlock(prevMessageCount),
+    arbitrumProvider.getBlock(newMessageCount),
+  ])
+
   console.log(
     'Finality delay between',
     timestamp - prevBlock.timestamp,
