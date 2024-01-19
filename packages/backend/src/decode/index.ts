@@ -59,6 +59,7 @@ async function getTx() {
     case 'base':
     case 'lyra':
     case 'publicgoodsnetwork':
+    case 'kroma':
     case 'zora':
       await decodeOPStack(
         finalityRepository,

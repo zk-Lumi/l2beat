@@ -24,8 +24,9 @@ export async function decodeArbitrum(
   const decodedInput = (
     i.decodeFunctionData(fnSignature, data) as bigint[]
   ).map((x) => x.toString())
-  const prevMessageCount = +decodedInput[4] + 1 + 22207817
-  const newMessageCount = +decodedInput[5] + 22207817
+  const blockOffset = 22207817
+  const prevMessageCount = +decodedInput[4] + 1 + blockOffset
+  const newMessageCount = +decodedInput[5] + blockOffset
 
   const rpcUrl = `https://arb-mainnet.alchemyapi.io/v2/${alchemyKey}`
   const arbitrumProvider = new ethers.providers.JsonRpcProvider(rpcUrl)
