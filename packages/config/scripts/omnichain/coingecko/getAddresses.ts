@@ -34,7 +34,7 @@ export async function getAddresses(
   const mergedData = mergeAddresses(savedAddresses, addresses, missingRange)
   console.log('Saving addresses...')
   writeFileSync(
-    './scripts/omnichain-value/savedAddresses.json',
+    './scripts/omnichain/coingecko/savedAddresses.json',
     JSON.stringify(mergedData, null, 2),
   )
 
@@ -49,13 +49,15 @@ const savedAddressesSchema = z.object({
 type SavedAddresses = z.infer<typeof savedAddressesSchema>
 
 function readSavedAddresses() {
-  if (!existsSync('./scripts/omnichain-value/savedAddresses.json')) {
+  if (!existsSync('./scripts/omnichain/coingecko/savedAddresses.json')) {
     console.log('No saved addresses found, downloading all...')
     return undefined
   }
 
   const raw = JSON.parse(
-    readFileSync('./scripts/omnichain-value/savedAddresses.json').toString(),
+    readFileSync(
+      './scripts/omnichain/coingecko/savedAddresses.json',
+    ).toString(),
   ) as unknown
   const parsed = savedAddressesSchema.parse(raw)
   return parsed

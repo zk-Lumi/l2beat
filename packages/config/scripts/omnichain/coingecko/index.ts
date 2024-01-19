@@ -22,9 +22,10 @@ const pricesSchema = z.record(z.string(), z.object({ usd: z.number() }))
 
 async function main() {
   const env = getEnv()
-  const etherscanApiKey = env.string('ETHERSCAN_API_KEY')
+  const etherscanApiKey = env.string('ETHEREUM_ETHERSCAN_API_KEY')
   const coingeckoApiKey = env.string('COINGECKO_API_KEY')
-  const provider = new providers.AlchemyProvider('homestead')
+  const alchemyApiKey = env.string('ALCHEMY_API_KEY')
+  const provider = new providers.AlchemyProvider('homestead', alchemyApiKey)
   const blockNumber = await provider.getBlockNumber()
 
   const httpClient = new HttpClient()
@@ -105,7 +106,7 @@ async function compareWithLive(
     }
 
     writeFileSync(
-      './scripts/omnichain-value/tokens.json',
+      './scripts/omnichain/coingecko/tokens.json',
       JSON.stringify(
         dataToSave,
         (_, value) =>
