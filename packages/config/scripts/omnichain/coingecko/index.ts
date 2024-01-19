@@ -88,14 +88,10 @@ async function compareWithLive(
   }
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   const liveValueUsd = BigInt(Math.floor(apiResponse.hourly.data.at(-1)![1]))
-  assert(
-    totalBridgedValueUsd > liveValueUsd,
-    'Total value is less than live value. Something is wrong.',
-  )
 
   const diff = totalBridgedValueUsd - liveValueUsd
 
-  if (diff > THRESHOLD_USD) {
+  if (diff > THRESHOLD_USD || diff < -THRESHOLD_USD) {
     console.log(
       `Total value is ${diff} different from live value. Probably a new token appeared. Check the new tokens that appeared in tokens.json`,
     )
