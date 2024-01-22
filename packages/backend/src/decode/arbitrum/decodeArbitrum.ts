@@ -1,4 +1,4 @@
-import { ProjectId, UnixTime } from '@l2beat/shared-pure'
+import { LivenessType, ProjectId, UnixTime } from '@l2beat/shared-pure'
 import { ethers, utils } from 'ethers'
 
 import { analyzeTransaction } from '../analyze'
@@ -12,6 +12,7 @@ export async function decodeArbitrum(
   const tx_hash = await finalityRepository.findByProjectIdAndTimestamp(
     ProjectId('arbitrum'),
     new UnixTime(Number(targetTimestamp)),
+    LivenessType('DA'),
     0,
   )
   console.log(tx_hash)

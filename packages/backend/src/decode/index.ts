@@ -5,6 +5,7 @@ import { getConfig } from '../config'
 import { Database } from '../peripherals/database/shared/Database'
 import { decodeArbitrum } from './arbitrum/decodeArbitrum'
 import { FinalityRepository } from './FinalityRepository'
+import { decodeLinea } from './linea/decodeLinea'
 import { decodeOPStack } from './OPStack/decodeOPStack'
 
 const config = getConfig()
@@ -53,24 +54,41 @@ async function getTx() {
 
   const alchemyKey = getEnv().string('FINALITY_ALCHEMY_KEY')
 
-  switch (projectId) {
-    case 'aevo':
-    case 'optimism':
-    case 'base':
-    case 'lyra':
-    case 'publicgoodsnetwork':
-    case 'kroma':
-    case 'zora':
-      await decodeOPStack(
-        finalityRepository,
-        alchemyKey,
-        projectId,
-        targetTimestamp,
-      )
-      break
-    case 'arbitrum':
-      await decodeArbitrum(finalityRepository, alchemyKey, targetTimestamp)
-      break
+  let i = 0
+
+  while (true) {
+    const tmp = UnixTime.fromDate(new Date('2024-01-14T00:00:00.000Z')).add(
+      -i,
+      'hours',
+    )
+    console.log(tmp.toDate().toISOString())
+    switch (projectId) {
+      case 'aevo':
+      case 'optimism':
+      case 'base':
+      case 'lyra':
+      case 'publicgoodsnetwork':
+      case 'kroma':
+      case 'zora':
+        await decodeOPStack(
+          finalityRepository,
+          alchemyKey,
+          projectId,
+          tmp.toNumber().toString(),
+        )
+        break
+      case 'arbitrum':
+        await decodeArbitrum(finalityRepository, alchemyKey, targetTimestamp)
+        break
+      case 'linea':
+        await decodeLinea(
+          finalityRepository,
+          alchemyKey,
+          tmp.toNumber().toString(),
+        )
+        break
+    }
+    i++
   }
 }
 

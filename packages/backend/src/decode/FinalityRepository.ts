@@ -1,5 +1,5 @@
 import { Logger } from '@l2beat/backend-tools'
-import { ProjectId, UnixTime } from '@l2beat/shared-pure'
+import { LivenessType, ProjectId, UnixTime } from '@l2beat/shared-pure'
 
 import {
   BaseRepository,
@@ -16,6 +16,7 @@ export class FinalityRepository extends BaseRepository {
   async findByProjectIdAndTimestamp(
     projectId: ProjectId,
     date: UnixTime,
+    type: LivenessType,
     place: number,
   ): Promise<string> {
     const knex = await this.knex()
@@ -25,7 +26,7 @@ export class FinalityRepository extends BaseRepository {
         .join('liveness_configuration as c', 'l.liveness_id', 'c.id')
         .select('l.tx_hash', 'l.timestamp')
         .where('c.project_id', projectId.toString())
-        .andWhere('c.type', 'DA')
+        .andWhere('c.type', type.toString())
         .andWhere('l.timestamp', '>', date.toDate())
         .orderBy('l.timestamp', 'asc')
         .distinct('l.tx_hash')
@@ -35,7 +36,7 @@ export class FinalityRepository extends BaseRepository {
         .join('liveness_configuration as c', 'l.liveness_id', 'c.id')
         .select('l.tx_hash', 'l.timestamp')
         .where('c.project_id', projectId.toString())
-        .andWhere('c.type', 'DA')
+        .andWhere('c.type', type.toString())
         .andWhere('l.timestamp', '<=', date.toDate())
         .orderBy('l.timestamp', 'desc')
         .distinct('l.tx_hash')
