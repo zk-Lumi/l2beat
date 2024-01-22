@@ -7,6 +7,7 @@ import { decodeArbitrum } from './arbitrum/decodeArbitrum'
 import { FinalityRepository } from './FinalityRepository'
 import { decodeLinea } from './linea/decodeLinea'
 import { decodeOPStack } from './OPStack/decodeOPStack'
+import { decodezkSyncEra } from './zksyncera/decodezkSyncEra'
 
 const config = getConfig()
 const loggerOptions = { ...config.logger }
@@ -87,6 +88,15 @@ async function getTx() {
           tmp.toNumber().toString(),
         )
         break
+      case 'zksyncera':
+        await decodezkSyncEra(
+          finalityRepository,
+          alchemyKey,
+          tmp.toNumber().toString(),
+        )
+        break
+      default:
+        throw new Error(`No implementation for project ID: ${projectId}`)
     }
     i++
   }
