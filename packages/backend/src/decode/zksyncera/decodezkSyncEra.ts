@@ -5,7 +5,9 @@ import { analyzeTransaction } from '../analyze'
 import { FinalityRepository } from '../FinalityRepository'
 
 type zkSyncEraDecoded = [
+  [number, string, number, number, string, string, number, string],
   [number, string, number, number, string, string, number, string][],
+  [number[], number[]],
 ]
 
 export async function decodezkSyncEra(
@@ -16,7 +18,7 @@ export async function decodezkSyncEra(
   const tx_hash = await finalityRepository.findByProjectIdAndTimestamp(
     ProjectId('zksync2'),
     new UnixTime(Number(targetTimestamp)),
-    LivenessType('STATE'),
+    LivenessType('PROOF'),
     0,
   )
   console.log(tx_hash)
@@ -24,14 +26,18 @@ export async function decodezkSyncEra(
   const { data, timestamp } = await analyzeTransaction(alchemyKey, tx_hash)
 
   const fnSignature =
-    'executeBatches((uint64,bytes32,uint64,uint256,bytes32,bytes32,uint256,bytes32)[])'
+    'proveBatches((uint64,bytes32,uint64,uint256,bytes32,bytes32,uint256,bytes32), (uint64,bytes32,uint64,uint256,bytes32,bytes32,uint256,bytes32)[], (uint256[],uint256[]))'
   const i = new utils.Interface([`function ${fnSignature}`])
   const decodedInput = i.decodeFunctionData(
     fnSignature,
     data,
   ) as zkSyncEraDecoded
-  const timestamps = decodedInput[0].map((x) => Number(x[6]))
-
+  const timestamps = []
+  timestamps.push(Number(decodedInput[0][6]))
+  decodedInput[1].forEach((batch) => {
+    timestamps.push(Number(batch[6]))
+  })
+  console.log(timestamps.length)
   const min = timestamp - Math.min(...timestamps)
   const max = timestamp - Math.max(...timestamps)
   console.log('Finality delay between', min, 'and', max, 'seconds')
