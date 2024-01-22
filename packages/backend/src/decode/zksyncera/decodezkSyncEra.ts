@@ -37,7 +37,7 @@ export async function decodezkSyncEra(
   decodedInput[1].forEach((batch) => {
     timestamps.push(Number(batch[6]))
   })
-  console.log(timestamps.length)
+
   const min = timestamp - Math.min(...timestamps)
   const max = timestamp - Math.max(...timestamps)
   console.log('Finality delay between', min, 'and', max, 'seconds')
