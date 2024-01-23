@@ -9,6 +9,7 @@ import { decodeLinea } from './linea/decodeLinea'
 import { decodeOPStack } from './OPStack/decodeOPStack'
 import { decodePolygonZkEVM } from './polygonzkevm/decodePolygonZkEVM'
 import { decodezkSyncEra } from './zksyncera/decodezkSyncEra'
+import { decodezkSyncLite } from './zksynclite/decodezkSyncLite'
 
 const config = getConfig()
 const loggerOptions = { ...config.logger }
@@ -98,6 +99,13 @@ async function getTx() {
         break
       case 'polygonzkevm':
         await decodePolygonZkEVM(
+          finalityRepository,
+          alchemyKey,
+          tmp.toNumber().toString(),
+        )
+        break
+      case 'zksynclite':
+        await decodezkSyncLite(
           finalityRepository,
           alchemyKey,
           tmp.toNumber().toString(),
