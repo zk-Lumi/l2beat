@@ -8,6 +8,7 @@ import { FinalityRepository } from './FinalityRepository'
 import { decodeLinea } from './linea/decodeLinea'
 import { decodeOPStack } from './OPStack/decodeOPStack'
 import { decodePolygonZkEVM } from './polygonzkevm/decodePolygonZkEVM'
+import { decodeStarknet } from './starknet/decodeStarknet'
 import { decodezkSyncEra } from './zksyncera/decodezkSyncEra'
 import { decodezkSyncLite } from './zksynclite/decodezkSyncLite'
 
@@ -61,8 +62,8 @@ async function getTx() {
 
   while (true) {
     const tmp = UnixTime.fromDate(new Date('2024-01-14T00:00:00.000Z')).add(
-      -i,
-      'hours',
+      -(i * 10),
+      'minutes',
     )
     console.log(tmp.toDate().toISOString())
     switch (projectId) {
@@ -106,6 +107,13 @@ async function getTx() {
         break
       case 'zksynclite':
         await decodezkSyncLite(
+          finalityRepository,
+          alchemyKey,
+          tmp.toNumber().toString(),
+        )
+        break
+      case 'starknet':
+        await decodeStarknet(
           finalityRepository,
           alchemyKey,
           tmp.toNumber().toString(),
