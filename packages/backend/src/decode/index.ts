@@ -6,6 +6,7 @@ import { Database } from '../peripherals/database/shared/Database'
 import { decodeArbitrum } from './arbitrum/decodeArbitrum'
 import { FinalityRepository } from './FinalityRepository'
 import { decodeLinea } from './linea/decodeLinea'
+import { decodeLoopring } from './loopring/decodeLoopring'
 import { decodeOPStack } from './OPStack/decodeOPStack'
 import { decodePolygonZkEVM } from './polygonzkevm/decodePolygonZkEVM'
 import { decodeStarknet } from './starknet/decodeStarknet'
@@ -114,6 +115,13 @@ async function getTx() {
         break
       case 'starknet':
         await decodeStarknet(
+          finalityRepository,
+          alchemyKey,
+          tmp.toNumber().toString(),
+        )
+        break
+      case 'loopring':
+        await decodeLoopring(
           finalityRepository,
           alchemyKey,
           tmp.toNumber().toString(),
