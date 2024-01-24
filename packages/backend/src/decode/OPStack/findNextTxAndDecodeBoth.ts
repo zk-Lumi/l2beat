@@ -1,4 +1,4 @@
-import { ProjectId, UnixTime } from '@l2beat/shared-pure'
+import { LivenessType, ProjectId, UnixTime } from '@l2beat/shared-pure'
 
 import { analyzeTransaction } from '../analyze'
 import { FinalityRepository } from '../FinalityRepository'
@@ -22,6 +22,7 @@ export async function findNextTxAndDecodeBoth(
   const next_tx_hash = await finalityRepository.findByProjectIdAndTimestamp(
     ProjectId(projectId),
     new UnixTime(Number(targetTimestamp)),
+    LivenessType('DA'),
     currentTxCount - 1,
   )
   console.log('next_tx_hash', next_tx_hash)
