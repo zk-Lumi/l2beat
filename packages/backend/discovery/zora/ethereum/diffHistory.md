@@ -2,7 +2,7 @@ Generated with discovered.json: 0x48bfdf9e2784cf866417f3a316ee138f6e436183
 
 # Diff at Wed, 07 Feb 2024 08:30:13 GMT:
 
-- author: Radina Talanova (<radinatalanova@Radinas-MacBook-Air.local>)
+- author: Radina Talanova (<nt.radina@gmail.com>)
 - comparing to: main@d3197a61dbc06c8a25cdc297ce6d04d184d70378 block: 19090324
 - current block number: 19175133
 
