@@ -1,3 +1,28 @@
+Generated with discovered.json: 0xc3f0d3dcbf98f810abe67f5c46bfe92a6ae7de5f
+
+# Diff at Wed, 07 Feb 2024 08:40:42 GMT:
+
+- author: Radina Talanova (<nt.radina@gmail.com>)
+- comparing to: main@d3197a61dbc06c8a25cdc297ce6d04d184d70378 block: 19090320
+- current block number: 19175185
+
+## Description
+
+Updated value for txs length.
+
+## Config/verification related changes
+
+Following changes come from updates made to the config file,
+or/and contracts becoming verified, not from differences found during
+discovery. Values are for block 19090320 (main branch discovery), not current.
+
+```diff
+    contract SystemConfig (0x0e4C4CDd01ceCB01070E9Fdfe7600871e4ae996e) {
+      values.opStackDA.isAllTxsLengthEqualToCelestiaDAExample:
+-        true
+    }
+```
+
 Generated with discovered.json: 0x4503a45a15552e2f0c5fac881fdbb0f026d5f650
 
 # Diff at Fri, 26 Jan 2024 10:56:14 GMT:
