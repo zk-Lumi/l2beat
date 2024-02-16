@@ -1,3 +1,83 @@
+Generated with discovered.json: 0x8b793f60d9a7a5e7bdc837e7c9b9a98fb2dfd1d9
+
+# Diff at Fri, 16 Feb 2024 13:11:11 GMT:
+
+- author: Adrian Adamiak (<adrian@adamiak.net>)
+- comparing to: main@4ae484833d6efe23a004ffae28560c1dfa3bdb18 block: 19226841
+- current block number: 19240671
+
+## Description
+
+Provide description of changes. This section will be preserved.
+
+## Watched changes
+
+```diff
+    contract Bridge (0x2a3DD3EB832aF982ec71669E178424b10Dca2EDe) {
+      values.getRoot:
+-        "0x281e6a3f11f523b6416b8e7e44c9fa4311a1984fa16f16e6789d2a96a9b8a89a"
++        "0x7e3ed03cb4e70123a94d63b29c8f56fde35bc6519456cc102988ef2b4bb27e8e"
+    }
+```
+
+```diff
+    contract PolygonRollupManager (0x5132A183E9F3CB7C848b0AAC5Ae0c4f0491B7aB2) {
+      values.getRollupExitRoot:
+-        "0xdbf6a41b961855c5c76e0fa2264fb104706925d2b73f6f5261ded3ff6cb1798f"
++        "0xf7a60b733f3d85b87993ab952e168c3c560e7a7a7c534ab811d639c002277188"
+      values.lastAggregationTimestamp:
+-        1707920735
++        1708085867
+      values.rollupsData.0.6:
+-        1985375
++        1986583
+      values.rollupsData.0.5:
+-        1985383
++        1986612
+      values.rollupsData.0.4:
+-        "0x0564eb8112ca7631051fdc33c380ba213a043b1d54b3b3d052ba52c4758471cd"
++        "0x797d86a9847f2f34465c0a572e4549b5207342c70143c537a8ad96bf017a0a5a"
+      values.totalSequencedBatches:
+-        634
++        1863
+      values.totalVerifiedBatches:
+-        626
++        1834
+    }
+```
+
+```diff
+    contract PolygonZkEVMExistentEtrog (0x519E42c24163192Dca44CD3fBDCEBF6be9130987) {
+      values.lastAccInputHash:
+-        "0x40287fbe5138811c6dd6070e95cda98e96fb93a4d89b8b7791487e5be1e42af8"
++        "0x0228f6b6977e074bc4ed3a78028e089094f7d2a5d5985e5c1b6f061b3c3109c7"
+    }
+```
+
+```diff
+    contract GlobalExitRootV2 (0x580bda1e7A0CFAe92Fa7F6c20A3794F169CE3CFb) {
+      values.depositCount:
+-        110
++        416
+      values.getRoot:
+-        "0x7fea3b9f69d928287af3d1cf3a0055d04de717fa31f977467bf2718c8798a40c"
++        "0x9b8d79b80df8513b12c1e1e6da718502f326bd8023c85ef6bba4a9e5664846d5"
+    }
+```
+
+## Config/verification related changes
+
+Following changes come from updates made to the config file,
+or/and contracts becoming verified, not from differences found during
+discovery. Values are for block 19226841 (main branch discovery), not current.
+
+```diff
+    contract PolygonRollupManager (0x5132A183E9F3CB7C848b0AAC5Ae0c4f0491B7aB2) {
+      values.rollupsData:
++        [["0x519E42c24163192Dca44CD3fBDCEBF6be9130987",1101,"0x1C3A3da552b8662CD69538356b1E7c2E9CC1EBD8",7,"0x0564eb8112ca7631051fdc33c380ba213a043b1d54b3b3d052ba52c4758471cd",1985383,1985375,0,0,1984749,0,0]]
+    }
+```
+
 Generated with discovered.json: 0xce8b41575c0b51dafec8f3ef40c3daba3c4fba4d
 
 # Diff at Wed, 14 Feb 2024 14:38:23 GMT:

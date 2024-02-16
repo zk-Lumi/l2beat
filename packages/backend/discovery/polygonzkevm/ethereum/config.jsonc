@@ -53,13 +53,12 @@
           "event": "ProveNonDeterministicPendingState",
           "returnParams": ["storedStateRoot", "provedStateRoot"]
         },
-        /*
         "rollupsData": {
           "type": "array",
           "method": "rollupIDToRollupData",
-          "maxLength": 5 //TODO: make it use rollupCount
+          "startIndex": 1,
+          "length": "{{ rollupCount }}"
         },
-        */
         "accessControl": {
           "type": "accessControl",
           "roleNames": {
