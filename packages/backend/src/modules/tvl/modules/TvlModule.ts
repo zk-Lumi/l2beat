@@ -133,7 +133,6 @@ export function createTvlModule(
   const tvlController = new TvlController(
     db.aggregatedReportRepository,
     db.reportRepository,
-    db.aggregatedReportStatusRepository,
     db.balanceRepository,
     db.priceRepository,
     config.projects,

@@ -20,7 +20,6 @@ import { Clock } from '../../../tools/Clock'
 import { TaskQueue } from '../../../tools/queue/TaskQueue'
 import { ReportProject } from '../reports/ReportProject'
 import { AggregatedReportRepository } from '../repositories/AggregatedReportRepository'
-import { AggregatedReportStatusRepository } from '../repositories/AggregatedReportStatusRepository'
 import { BalanceRepository } from '../repositories/BalanceRepository'
 import { PriceRepository } from '../repositories/PriceRepository'
 import { ReportRepository } from '../repositories/ReportRepository'
@@ -61,7 +60,6 @@ export class TvlController {
   constructor(
     private readonly aggregatedReportRepository: AggregatedReportRepository,
     private readonly reportRepository: ReportRepository,
-    private readonly aggregatedReportStatusRepository: AggregatedReportStatusRepository,
     private readonly balanceRepository: BalanceRepository,
     private readonly priceRepository: PriceRepository,
     private readonly projects: ReportProject[],

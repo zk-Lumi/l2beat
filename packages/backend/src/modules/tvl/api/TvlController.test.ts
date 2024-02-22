@@ -18,7 +18,6 @@ import {
   AggregatedReportRecord,
   AggregatedReportRepository,
 } from '../repositories/AggregatedReportRepository'
-import { AggregatedReportStatusRepository } from '../repositories/AggregatedReportStatusRepository'
 import {
   BalanceRecord,
   BalanceRepository,
@@ -93,17 +92,6 @@ describe(TvlController.name, () => {
         },
       ]
 
-      const aggregatedReportStatusRepository =
-        mockObject<AggregatedReportStatusRepository>({
-          findLatestTimestamp: async () => MINIMUM_TIMESTAMP,
-          findCountsForHash: async () => ({
-            isSynced: true,
-            latestTimestamp: MINIMUM_TIMESTAMP,
-            matching: 100, // doesn't matter
-            different: 0,
-          }),
-        })
-
       const reportRepository = mockObject<ReportRepository>({
         getByTimestamp: async () => [baseReport],
       })
@@ -118,7 +106,6 @@ describe(TvlController.name, () => {
       const controller = new TvlController(
         aggregatedReportRepository,
         reportRepository,
-        aggregatedReportStatusRepository,
         mockObject<BalanceRepository>({}),
         mockObject<PriceRepository>({}),
         [ARBITRUM],
@@ -165,21 +152,9 @@ describe(TvlController.name, () => {
         getDaily: async () => fakeReports.dailyReports,
       })
 
-      const aggregatedReportStatusRepository =
-        mockObject<AggregatedReportStatusRepository>({
-          findCountsForHash: async () => ({
-            isSynced: true,
-            latestTimestamp: fakeReports.to,
-            matching: 100, // doesn't matter
-            different: 0,
-          }),
-          findLatestTimestamp: async () => fakeReports.to,
-        })
-
       const controller = new TvlController(
         mockObject<AggregatedReportRepository>(),
         reportRepository,
-        aggregatedReportStatusRepository,
         mockObject<BalanceRepository>({}),
         mockObject<PriceRepository>({}),
         [ARBITRUM],
@@ -379,17 +354,6 @@ describe(TvlController.name, () => {
           },
         ]
 
-        const aggregatedReportStatusRepository =
-          mockObject<AggregatedReportStatusRepository>({
-            findCountsForHash: async () => ({
-              isSynced: true,
-              latestTimestamp: timestamp,
-              matching: 100, // doesn't matter
-              different: 0,
-            }),
-            findLatestTimestamp: async () => timestamp,
-          })
-
         const reportRepository = mockObject<ReportRepository>({
           getByTimestamp: async () => reports,
         })
@@ -405,7 +369,6 @@ describe(TvlController.name, () => {
         const controller = new TvlController(
           mockObject<AggregatedReportRepository>(),
           reportRepository,
-          aggregatedReportStatusRepository,
           balanceRepository,
           priceRepository,
           projects,
