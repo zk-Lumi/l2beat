@@ -18,7 +18,6 @@ import { TvlController } from '../api/TvlController'
 import { createTvlRouter } from '../api/TvlRouter'
 import { createTvlStatusRouter } from '../api/TvlStatusRouter'
 import { PriceUpdater } from '../PriceUpdater'
-import { AggregatedReportUpdater } from '../reports/AggregatedReportUpdater'
 import { AggregatedReportRepository } from '../repositories/AggregatedReportRepository'
 import { AggregatedReportStatusRepository } from '../repositories/AggregatedReportStatusRepository'
 import { BalanceRepository } from '../repositories/BalanceRepository'
@@ -130,15 +129,6 @@ export function createTvlModule(
 
   // #endregion
 
-  const aggregatedReportUpdater = new AggregatedReportUpdater(
-    modules.flatMap((x) => x.reportUpdaters ?? []),
-    db.aggregatedReportRepository,
-    db.aggregatedReportStatusRepository,
-    clock,
-    config.projects,
-    logger,
-  )
-
   // #region api
   const tvlController = new TvlController(
     db.aggregatedReportRepository,
@@ -148,21 +138,15 @@ export function createTvlModule(
     db.priceRepository,
     config.projects,
     config.tokens,
+    clock,
     logger,
-    aggregatedReportUpdater.getConfigHash(),
-    { errorOnUnsyncedTvl: config.tvl.errorOnUnsyncedTvl },
   )
 
   const dydxController = new DydxController(db.aggregatedReportRepository)
 
   const tvlRouter = createTvlRouter(tvlController, config.api)
   const dydxRouter = createDydxRouter(dydxController)
-  const tvlStatusRouter = createTvlStatusRouter(
-    clock,
-    priceUpdater,
-    aggregatedReportUpdater,
-    modules,
-  )
+  const tvlStatusRouter = createTvlStatusRouter(clock, priceUpdater, modules)
 
   // #endregion
 
@@ -184,8 +168,6 @@ export function createTvlModule(
     for (const module of modules) {
       await module.start?.()
     }
-
-    await aggregatedReportUpdater.start()
 
     logger.info('Started')
   }

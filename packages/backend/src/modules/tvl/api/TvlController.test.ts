@@ -5,7 +5,6 @@ import {
   AssetId,
   ChainId,
   EthereumAddress,
-  Hash256,
   ProjectId,
   ReportType,
   Token,
@@ -13,6 +12,7 @@ import {
 } from '@l2beat/shared-pure'
 import { expect, mockObject } from 'earl'
 
+import { Clock } from '../../../tools/Clock'
 import { ReportProject } from '../reports/ReportProject'
 import {
   AggregatedReportRecord,
@@ -51,8 +51,6 @@ describe(TvlController.name, () => {
 
   describe(TvlController.prototype.getTvlApiResponse.name, () => {
     it('selects minimum viable timestamp for the aggregation', async () => {
-      const latestConfigHash = Hash256.random()
-
       const baseReport: ReportRecord = {
         timestamp: MINIMUM_TIMESTAMP,
         usdValue: 1234_56n,
@@ -125,11 +123,8 @@ describe(TvlController.name, () => {
         mockObject<PriceRepository>({}),
         [ARBITRUM],
         [USDC],
+        mockObject<Clock>({ getLastHour: () => MINIMUM_TIMESTAMP }),
         Logger.SILENT,
-        latestConfigHash,
-        {
-          errorOnUnsyncedTvl: false,
-        },
       )
 
       await controller.getTvlApiResponse()
@@ -157,8 +152,6 @@ describe(TvlController.name, () => {
    */
   describe(TvlController.prototype.getAssetTvlApiResponse.name, () => {
     it('produces asset`s balances in time for charts', async () => {
-      const latestConfigHash = Hash256.random()
-
       const projectId = ProjectId('arbitrum')
       const chainId = ChainId.ARBITRUM
       const asset = AssetId.USDC
@@ -191,11 +184,9 @@ describe(TvlController.name, () => {
         mockObject<PriceRepository>({}),
         [ARBITRUM],
         [USDC],
+        mockObject<Clock>({ getLastHour: () => fakeReports.to }),
+
         Logger.SILENT,
-        latestConfigHash,
-        {
-          errorOnUnsyncedTvl: false,
-        },
       )
 
       const result = await controller.getAssetTvlApiResponse(
@@ -277,7 +268,6 @@ describe(TvlController.name, () => {
           (x) => x.symbol === 'ETH' && x.type === 'CBV',
         )!
 
-        const latestConfigHash = Hash256.random()
         const timestamp = UnixTime.now()
 
         const firstEscrow = EthereumAddress(
@@ -420,11 +410,8 @@ describe(TvlController.name, () => {
           priceRepository,
           projects,
           [dai, op, usdc],
+          mockObject<Clock>({ getLastHour: () => timestamp }),
           Logger.SILENT,
-          latestConfigHash,
-          {
-            errorOnUnsyncedTvl: false,
-          },
         )
 
         const result = await controller.getProjectTokenBreakdownApiResponse()

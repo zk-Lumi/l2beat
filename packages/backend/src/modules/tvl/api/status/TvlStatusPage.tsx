@@ -20,26 +20,16 @@ interface StatusPageProps {
     groupName: string
     updaters: UpdaterStatus[]
   }[]
-  aggregatedStatus: SyncStatus
 }
 
 export function TvlStatusPage({
   statuses,
   latestSafeTimestamp,
-  aggregatedStatus,
 }: StatusPageProps) {
   return (
     <Page title="TVL module status (24h)">
-      <div
-        className={`card ${
-          aggregatedStatus === 'not synced' ? 'warn' : 'hint'
-        }`}
-        style={{ margin: '8px', width: '358px' }}
-      >
+      <div className={`card`} style={{ margin: '8px', width: '358px' }}>
         <p>Overview</p>
-        <p>
-          {getStatusIndicator(aggregatedStatus)} {aggregatedStatus}
-        </p>
         <hr />
         <p style={{ fontWeight: 'bold' }}>Target timestamp:</p>
         <p>

@@ -4,7 +4,6 @@ import {
   AssetId,
   cacheAsyncFunction,
   ChainId,
-  Hash256,
   ProjectAssetsBreakdownApiResponse,
   ProjectId,
   ReportType,
@@ -17,6 +16,7 @@ import {
   UnixTime,
 } from '@l2beat/shared-pure'
 
+import { Clock } from '../../../tools/Clock'
 import { TaskQueue } from '../../../tools/queue/TaskQueue'
 import { ReportProject } from '../reports/ReportProject'
 import { AggregatedReportRepository } from '../repositories/AggregatedReportRepository'
@@ -35,10 +35,6 @@ import {
   groupAndMergeBreakdowns,
 } from './tvl'
 import { Result } from './types'
-
-interface TvlControllerOptions {
-  errorOnUnsyncedTvl: boolean
-}
 
 type ProjectAssetBreakdownResult = Result<
   ProjectAssetsBreakdownApiResponse,
@@ -70,9 +66,8 @@ export class TvlController {
     private readonly priceRepository: PriceRepository,
     private readonly projects: ReportProject[],
     private readonly tokens: Token[],
+    private readonly clock: Clock,
     private readonly logger: Logger,
-    private readonly aggregatedConfigHash: Hash256,
-    private readonly options: TvlControllerOptions,
   ) {
     this.logger = this.logger.for(this)
 
@@ -95,35 +90,21 @@ export class TvlController {
   }
 
   async getTvlApiResponse(): Promise<TvlResult> {
-    const status = await this.getTvlModuleStatus()
-
-    if (!status.latestTimestamp) {
-      return {
-        result: 'error',
-        error: 'NO_DATA',
-      }
-    }
-
-    if (!status.isSynced && this.options.errorOnUnsyncedTvl) {
-      return {
-        result: 'error',
-        error: 'DATA_NOT_FULLY_SYNCED',
-      }
-    }
+    const latestTimestamp = this.clock.getLastHour()
 
     const [hourlyReports, sixHourlyReports, dailyReports, latestReports] =
       await Promise.all([
         this.aggregatedReportRepository.getHourlyWithAnyType(
-          getHourlyMinTimestamp(status.latestTimestamp),
+          getHourlyMinTimestamp(latestTimestamp),
         ),
 
         this.aggregatedReportRepository.getSixHourlyWithAnyType(
-          getSixHourlyMinTimestamp(status.latestTimestamp),
+          getSixHourlyMinTimestamp(latestTimestamp),
         ),
 
         this.aggregatedReportRepository.getDailyWithAnyType(),
 
-        this.reportRepository.getByTimestamp(status.latestTimestamp),
+        this.reportRepository.getByTimestamp(latestTimestamp),
       ])
 
     const projects = []
@@ -151,7 +132,7 @@ export class TvlController {
       dailyReports,
       latestReports,
       projects,
-      status.latestTimestamp,
+      latestTimestamp,
     )
 
     return { result: 'success', data: tvlApiResponse }
@@ -160,8 +141,6 @@ export class TvlController {
   async getAggregatedTvlApiResponse(
     slugs: string[],
   ): Promise<AggregatedTvlResult> {
-    console.time('[Aggregate endpoint]: setup')
-
     const projectIdsFilter = [...layer2s, ...bridges]
       .filter((project) => !project.isUpcoming)
       .filter((project) => slugs.includes(project.display.slug))
@@ -174,46 +153,25 @@ export class TvlController {
       }
     }
 
-    const status = await this.getTvlModuleStatus()
+    const latestTimestamp = this.clock.getLastHour()
 
-    if (!status.latestTimestamp) {
-      return {
-        result: 'error',
-        error: 'NO_DATA',
-      }
-    }
-
-    if (!status.isSynced && this.options.errorOnUnsyncedTvl) {
-      return {
-        result: 'error',
-        error: 'DATA_NOT_FULLY_SYNCED',
-      }
-    }
-    console.timeEnd('[Aggregate endpoint]: setup')
-
-    console.time('[Aggregate endpoint]: database')
     const [hourlyReports, sixHourlyReports, dailyReports] = await Promise.all([
       this.aggregatedReportRepository.getAggregateHourly(
         projectIdsFilter,
-        getHourlyMinTimestamp(status.latestTimestamp),
+        getHourlyMinTimestamp(latestTimestamp),
       ),
       this.aggregatedReportRepository.getAggregateSixHourly(
         projectIdsFilter,
-        getSixHourlyMinTimestamp(status.latestTimestamp),
+        getSixHourlyMinTimestamp(latestTimestamp),
       ),
       this.aggregatedReportRepository.getAggregateDaily(projectIdsFilter),
     ])
-    console.timeEnd('[Aggregate endpoint]: database')
-
-    console.time('[Aggregate endpoint]: aggregation')
 
     const data: TvlApiCharts = {
       hourly: aggregateRecordsToResponse(hourlyReports),
       sixHourly: aggregateRecordsToResponse(sixHourlyReports),
       daily: aggregateRecordsToResponse(dailyReports),
     }
-
-    console.timeEnd('[Aggregate endpoint]: aggregation')
 
     return {
       result: 'success',
@@ -237,21 +195,7 @@ export class TvlController {
       }
     }
 
-    const status = await this.getTvlModuleStatus()
-
-    if (!status.latestTimestamp) {
-      return {
-        result: 'error',
-        error: 'NO_DATA',
-      }
-    }
-
-    if (!status.isSynced && this.options.errorOnUnsyncedTvl) {
-      return {
-        result: 'error',
-        error: 'DATA_NOT_FULLY_SYNCED',
-      }
-    }
+    const latestTimestamp = this.clock.getLastHour()
 
     const [hourlyReports, sixHourlyReports, dailyReports] = await Promise.all([
       this.reportRepository.getHourly(
@@ -259,14 +203,14 @@ export class TvlController {
         chainId,
         assetId,
         assetType,
-        getHourlyMinTimestamp(status.latestTimestamp),
+        getHourlyMinTimestamp(latestTimestamp),
       ),
       this.reportRepository.getSixHourly(
         projectId,
         chainId,
         assetId,
         assetType,
-        getSixHourlyMinTimestamp(status.latestTimestamp),
+        getSixHourlyMinTimestamp(latestTimestamp),
       ),
       this.reportRepository.getDaily(projectId, chainId, assetId, assetType),
     ])
@@ -294,26 +238,12 @@ export class TvlController {
   }
 
   async getProjectTokenBreakdownApiResponse(): Promise<ProjectAssetBreakdownResult> {
-    const status = await this.getTvlModuleStatus()
-
-    if (!status.latestTimestamp) {
-      return {
-        result: 'error',
-        error: 'NO_DATA',
-      }
-    }
-
-    if (!status.isSynced && this.options.errorOnUnsyncedTvl) {
-      return {
-        result: 'error',
-        error: 'DATA_NOT_FULLY_SYNCED',
-      }
-    }
+    const latestTimestamp = this.clock.getLastHour()
 
     const [latestReports, balances, prices] = await Promise.all([
-      this.reportRepository.getByTimestamp(status.latestTimestamp),
-      this.balanceRepository.getByTimestamp(status.latestTimestamp),
-      this.priceRepository.getByTimestamp(status.latestTimestamp),
+      this.reportRepository.getByTimestamp(latestTimestamp),
+      this.balanceRepository.getByTimestamp(latestTimestamp),
+      this.priceRepository.getByTimestamp(latestTimestamp),
     ])
 
     const externalAssetsBreakdown = getNonCanonicalAssetsBreakdown(this.logger)(
@@ -343,31 +273,10 @@ export class TvlController {
     return {
       result: 'success',
       data: {
-        dataTimestamp: status.latestTimestamp,
+        dataTimestamp: latestTimestamp,
         breakdowns,
       },
     }
-  }
-
-  private async getTvlModuleStatus() {
-    const { matching: syncedReportsAmount, different: unsyncedReportsAmount } =
-      await this.aggregatedReportStatusRepository.findCountsForHash(
-        this.aggregatedConfigHash,
-      )
-
-    const latestTimestamp =
-      await this.aggregatedReportStatusRepository.findLatestTimestamp()
-
-    const isSynced = unsyncedReportsAmount === 0
-
-    const result = {
-      syncedReportsAmount,
-      unsyncedReportsAmount,
-      isSynced,
-      latestTimestamp,
-    }
-
-    return result
   }
 }
 

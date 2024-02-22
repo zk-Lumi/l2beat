@@ -5,14 +5,12 @@ import { withTypedContext } from '../../../api/types'
 import { Clock } from '../../../tools/Clock'
 import { TvlModule } from '../modules/types'
 import { PriceUpdater } from '../PriceUpdater'
-import { AggregatedReportUpdater } from '../reports/AggregatedReportUpdater'
-import { getSyncStatus, renderTvlStatusPage } from './status/TvlStatusPage'
+import { renderTvlStatusPage } from './status/TvlStatusPage'
 import { renderTvlStatusPageDetailed } from './status/TvlStatusPageDetailed'
 
 export function createTvlStatusRouter(
   clock: Clock,
   priceUpdater: PriceUpdater,
-  aggregatedReportUpdater: AggregatedReportUpdater,
   modules: TvlModule[],
 ) {
   const router = new Router()
@@ -20,7 +18,7 @@ export function createTvlStatusRouter(
   const statuses = [
     {
       groupName: 'shared',
-      updaters: [priceUpdater, aggregatedReportUpdater],
+      updaters: [priceUpdater],
     },
     ...modules.map((x) => {
       const reports = x.reportUpdaters ?? []
@@ -42,9 +40,6 @@ export function createTvlStatusRouter(
           ...x.getStatus(),
         })),
       })),
-      aggregatedStatus: getSyncStatus(
-        aggregatedReportUpdater.getStatus().statuses,
-      ),
     })
   })
 
