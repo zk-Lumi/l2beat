@@ -8,6 +8,7 @@ import { cBridge } from './cBridge'
 import { chainport } from './chainport'
 import { connext } from './connext'
 import { debridge } from './debridge'
+import { fraxferry } from './fraxferry'
 import { gravity } from './gravity'
 import { harmony } from './harmony'
 import { hop } from './hop'
@@ -61,6 +62,7 @@ export const bridges: Bridge[] = [
   lzOmnichain,
   multichain,
   near,
+  fraxferry,
   nomad,
   omni,
   opticsV1,
