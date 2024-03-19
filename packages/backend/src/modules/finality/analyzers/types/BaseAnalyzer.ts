@@ -61,6 +61,11 @@ export abstract class BaseAnalyzer {
   }
 
   abstract getTrackedTxSubtype(): TrackedTxsConfigSubtype
+  /**
+   *
+   * @param transaction
+   * @returns Finality delays in seconds for each transaction
+   */
   abstract getFinality(transaction: {
     txHash: string
     timestamp: UnixTime
